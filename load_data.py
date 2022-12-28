@@ -2,6 +2,15 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
 
+
+####################
+
+# This is a test!
+
+####################
+
+
+
 CATEGORIES = {
     'dog': 0,
     'elephant': 1,
