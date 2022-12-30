@@ -1,5 +1,7 @@
+import torch
 import torch.nn as nn
 from torchvision.models import resnet18
+from torch.autograd import Function
 
 class FeatureExtractor(nn.Module):
     def __init__(self):
@@ -46,6 +48,7 @@ class BaselineModel(nn.Module):
         x = self.classifier(x)
         return x
 
+
 class DomainDisentangleModel(nn.Module):
     def __init__(self):
         super(DomainDisentangleModel, self).__init__()
@@ -82,9 +85,28 @@ class DomainDisentangleModel(nn.Module):
         self.domain_classifier = nn.Linear(512, 7)
         self.category_classifier = nn.Linear(512, 4)
 
-        self.reconstructor = None #TODO
-        raise NotImplementedError('[TODO] Implement DomainDisentangleModel')
+        self.reconstructor = nn.Sequential(
+            nn.Linear(1024, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU()
+        )
+        # self.reconstructor = nn.Linear(1024, 512)
 
-    def forward(self, x):
-        #TODO
-        raise NotImplementedError('[TODO] Implement DomainDisentangleModel forward() method')
+
+    def forward(self, x, status='cc', maximizing=True):
+        # status: cc: category classifier, dc: domain classifier, rc: reconstructor
+        x = self.feature_extractor(x)
+        category_features = self.category_encoder(x)
+        domain_features = self.category_encoder(x)
+
+        if status == 'cc':
+            y = self.category_classifier(category_features) if maximizing else self.category_classifier(domain_features)
+        
+        elif status == 'dc':
+            y = self.domain_classifier(domain_features) if maximizing else self.domain_classifier(category_features)
+
+        elif status == 'rc':
+            # we should return the features too to be able to compute the loss
+            y = (self.reconstructor(torch.cat(category_features, domain_features)), x)
+
+        return y
