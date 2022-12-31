@@ -82,15 +82,15 @@ class DomainDisentangleModel(nn.Module):
             nn.ReLU()
         )
 
-        self.domain_classifier = nn.Linear(512, 7)
-        self.category_classifier = nn.Linear(512, 4)
+        self.category_classifier = nn.Linear(512, 7)
+        self.domain_classifier = nn.Linear(512, 4)
 
-        self.reconstructor = nn.Sequential(
-            nn.Linear(1024, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU()
-        )
-        # self.reconstructor = nn.Linear(1024, 512)
+        # self.reconstructor = nn.Sequential(
+        #     nn.Linear(1024, 512),
+        #     nn.BatchNorm1d(512),
+        #     nn.ReLU()
+        # )
+        self.reconstructor = nn.Linear(1024, 512)
 
 
     def forward(self, x, status='cc', maximizing=True):
@@ -107,6 +107,6 @@ class DomainDisentangleModel(nn.Module):
 
         elif status == 'rc':
             # we should return the features too to be able to compute the loss
-            y = (self.reconstructor(torch.cat(category_features, domain_features)), x)
+            y = (self.reconstructor(torch.cat((category_features, domain_features), dim=1)), x)
 
         return y
