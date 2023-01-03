@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision.models import resnet18
-from torch.autograd import Function
+
 
 class FeatureExtractor(nn.Module):
     def __init__(self):
@@ -83,13 +83,8 @@ class DomainDisentangleModel(nn.Module):
         )
 
         self.category_classifier = nn.Linear(512, 7)
-        self.domain_classifier = nn.Linear(512, 4)
+        self.domain_classifier = nn.Linear(512, 2)
 
-        # self.reconstructor = nn.Sequential(
-        #     nn.Linear(1024, 512),
-        #     nn.BatchNorm1d(512),
-        #     nn.ReLU()
-        # )
         self.reconstructor = nn.Linear(1024, 512)
 
 
@@ -97,7 +92,7 @@ class DomainDisentangleModel(nn.Module):
         # status: cc: category classifier, dc: domain classifier, rc: reconstructor
         x = self.feature_extractor(x)
         category_features = self.category_encoder(x)
-        domain_features = self.category_encoder(x)
+        domain_features = self.domain_encoder(x)
 
         if status == 'cc':
             y = self.category_classifier(category_features) if maximizing else self.category_classifier(domain_features)

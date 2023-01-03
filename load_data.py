@@ -1,7 +1,6 @@
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
-import random
 
 CATEGORIES = {
     'dog': 0,
@@ -152,28 +151,40 @@ def build_splits_domain_disentangle(opt):
     source_category_ratios = {category_idx: len(examples_list) for category_idx, examples_list in source_examples.items()}
     source_total_examples = sum(source_category_ratios.values())
     source_category_ratios = {category_idx: c / source_total_examples for category_idx, c in source_category_ratios.items()}
+    
+    target_category_ratios = {category_idx: len(examples_list) for category_idx, examples_list in target_examples.items()}
+    target_total_examples = sum(target_category_ratios.values())
+    source_domain_ratio = source_total_examples / (source_total_examples + target_total_examples)
 
-    # Build splits - we train only on the source domain (Art Painting)
-    val_split_length = source_total_examples * 0.2 # 20% of the training split used for validation
+    # Build splits - we train only on both source and target domain (for domain classification)
+    source_val_split_length = source_total_examples * 0.2 
+    target_val_split_length = target_total_examples * 0.2 
 
     train_examples = []
     val_examples = []
     test_examples = []
 
     for category_idx, examples_list in source_examples.items():
-        split_idx = round(source_category_ratios[category_idx] * val_split_length)
+        split_idx = round(source_category_ratios[category_idx] * source_val_split_length * source_domain_ratio)
         for i, example in enumerate(examples_list):
             if i > split_idx:
                 train_examples.append([example, category_idx]) # each pair is [path_to_img, class_label]
             else:
                 val_examples.append([example, category_idx]) # each pair is [path_to_img, class_label]
     
+    split_idx = round(target_val_split_length * (1 - source_domain_ratio))
+    loop_index = 0
     for category_idx, examples_list in target_examples.items():
         for example in examples_list:
-            test_examples.append([example, category_idx]) # each pair is [path_to_img, class_label]
+            loop_index += 1
+            test_examples.append([example, category_idx]) # each pair is [path_to_img, class_label]       
             # including target examples in the train_examples for domain classifier
-            # we specify them with label=7 to be able to determine them
-            train_examples.append([example, 7]) # each pair is [path_to_img, class_label]
+            # we specify them with label=7 to be able to determine them       
+            if loop_index > split_idx:
+                train_examples.append([example, 7]) # each pair is [path_to_img, 7]
+            else:
+                val_examples.append([example, 7]) # each pair is [path_to_img, 7]
+
 
     # Transforms
     normalize = T.Normalize([0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # ResNet18 - ImageNet Normalization
@@ -205,27 +216,3 @@ def build_splits_domain_disentangle(opt):
 def build_splits_clip_disentangle(opt):
     raise NotImplementedError('[TODO] Implement build_splits_clip_disentangle') #TODO
 
-
-
-
-
-
-
-################### print/test area ####################
-
-
-# rltest = read_lines("./data/PACS", "cartoon")
-# print(rltest)
-
-# rl2test = read_lines2("./data/PACS", "cartoon")
-# print(rl2test)
-
-# opt = {
-#     'data_path': "./data/PACS",
-#     'target_domain': "cartoon"
-# }
-
-# bsddtest = build_splits_domain_disentangle(opt)
-# print(bsddtest)
-
-# build_splits_baseline(opt)
