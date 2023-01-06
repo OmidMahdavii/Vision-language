@@ -1,8 +1,6 @@
 addresses = ['./groupe1AML.txt', './groupe1DAAI.txt', './groupe2AML.txt', './groupe2DAAI.txt', './groupe3AML.txt',
             './groupe3DAAI.txt', './groupe5AML.txt', './groupe6AML.txt']
 
-
-
 def read_lines(index):
     temp = []
     result = dict()
@@ -30,15 +28,16 @@ def read_lines(index):
 
 items = read_lines(0) # input parameter determines which category of description you want
 
-# # uncomment to show all the available descriptions for this category
+# # uncomment to show all the available descriptions for this category with the number of images which have this description
 
-# for i in items:
-#     print(i, len(items[i]))
+for i in items:
+    print(i, len(items[i]))
 
 
-    # # uncomment to show all the images having a specific description
-    # # for example, this code brings all the images described as 'grainy'
+
+
+# # uncomment to show all the images having a specific description
+# # for example, this code brings all the images described as 'grainy'
         
-for i in items['grainy']:
-    print(i)
-    # print('********************************')
+# for i in items['grainy']:
+#     print(i)
