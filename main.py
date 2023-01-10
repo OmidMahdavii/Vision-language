@@ -5,6 +5,7 @@ from load_data import build_splits_baseline, build_splits_domain_disentangle, bu
 from experiments.baseline import BaselineExperiment
 from experiments.domain_disentangle import DomainDisentangleExperiment
 from experiments.clip_disentangle import CLIPDisentangleExperiment
+# import optuna
 
 def setup_experiment(opt):
     
@@ -24,6 +25,7 @@ def setup_experiment(opt):
         raise ValueError('Experiment not yet supported.')
     
     return experiment, train_loader, validation_loader, test_loader
+    # return train_loader, validation_loader, test_loader
 
 def main(opt):
     experiment, train_loader, validation_loader, test_loader = setup_experiment(opt)
@@ -58,12 +60,54 @@ def main(opt):
 
                 iteration += 1
                 if iteration > opt['max_iterations']:
+                    opt['test'] = True
                     break
 
     # Test
     experiment.load_checkpoint(f'{opt["output_path"]}/best_checkpoint.pth')
     test_accuracy, _ = experiment.validate(test_loader)
     logging.info(f'[TEST] Accuracy: {(100 * test_accuracy):.2f}')
+
+
+# def objective(trial: optuna.Trial):
+#     w0 = trial.suggest_float("w0", 0.0, 1.0)
+#     w1 = trial.suggest_float("w1", 0.0, 1.0)
+#     w2 = trial.suggest_float("w2", 0.0, 1.0)
+#     w3 = trial.suggest_float("w3", 0.0, 1.0)
+#     w4 = trial.suggest_float("w4", 0.0, 1.0)
+
+#     train_loader, validation_loader, test_loader = setup_experiment(opt)
+#     experiment = DomainDisentangleExperiment(opt, [w0, w1, w2, w3, w4])
+
+#     iteration = 0
+#     best_accuracy = 0
+#     total_train_loss = 0
+
+#     while iteration < opt['max_iterations']:
+#         for data in train_loader:
+
+#             total_train_loss += experiment.train_iteration(data)
+            
+#             if iteration % opt['print_every'] == 0:
+#                 print(f'[TRAIN - {iteration}] Loss: {total_train_loss / (iteration + 1)}')
+            
+#             if iteration % opt['validate_every'] == 0:
+#                 # Run validation
+#                 val_accuracy, val_loss = experiment.validate(validation_loader)
+#                 if val_accuracy > best_accuracy:
+#                     best_accuracy = val_accuracy
+
+#             iteration += 1
+#             if iteration > opt['max_iterations']:
+#                 break
+    
+#     return best_accuracy
+
+# def search(opt):
+#     study = optuna.create_study()
+#     study.optimize(objective, n_trials=2)
+#     print(study.best_params)
+
 
 if __name__ == '__main__':
 
@@ -76,3 +120,5 @@ if __name__ == '__main__':
     logging.basicConfig(filename=f'{opt["output_path"]}/log.txt', format='%(message)s', level=logging.INFO, filemode='a')
 
     main(opt)
+    # search(opt)
+
