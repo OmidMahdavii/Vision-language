@@ -88,17 +88,17 @@ class DomainDisentangleModel(nn.Module):
         self.reconstructor = nn.Linear(1024, 512)
 
 
-    def forward(self, x, status='cc', maximizing=True):
+    def forward(self, x, status='cc', minimizing=True):
         # status: cc: category classifier, dc: domain classifier, rc: reconstructor
         x = self.feature_extractor(x)
         category_features = self.category_encoder(x)
         domain_features = self.domain_encoder(x)
 
         if status == 'cc':
-            y = self.category_classifier(category_features) if maximizing else self.category_classifier(domain_features)
+            y = self.category_classifier(category_features) if minimizing else self.category_classifier(domain_features)
         
         elif status == 'dc':
-            y = self.domain_classifier(domain_features) if maximizing else self.domain_classifier(category_features)
+            y = self.domain_classifier(domain_features) if minimizing else self.domain_classifier(category_features)
 
         elif status == 'rc':
             # we should return the features too to be able to compute the loss

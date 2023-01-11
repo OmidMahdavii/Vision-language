@@ -71,28 +71,28 @@ class DomainDisentangleExperiment: # See point 2. of the project
         source_samples = x[source_indices].to(self.device)
         category_labels = y[source_indices].to(self.device)
 
-        loss = 0
         self.optimizer.zero_grad()
+        loss = 0
 
         # the batch should have more than 1 source sample to be able to classify the category
         if len(source_indices) > 1:
             ### source samples
-            logits = self.model(source_samples, status='cc', maximizing=True)
-            temp_loss = self.cross_entropy_criterion(logits, category_labels)
+            logits = self.model(source_samples, status='cc', minimizing=True)
+            temp_loss = 4 * self.cross_entropy_criterion(logits, category_labels)
             temp_loss.backward()
             loss += temp_loss
 
-            logits = self.model(source_samples, status='cc', maximizing=False)
+            logits = self.model(source_samples, status='cc', minimizing=False)
             temp_loss = self.entropy_criterion(logits)
             temp_loss.backward()
             loss += temp_loss
 
-        logits = self.model(x, status='dc', maximizing=True)
+        logits = self.model(x, status='dc', minimizing=True)
         temp_loss = self.cross_entropy_criterion(logits, domain_labels)
         temp_loss.backward()
         loss += temp_loss
 
-        logits = self.model(x, status='dc', maximizing=False)
+        logits = self.model(x, status='dc', minimizing=False)
         temp_loss = self.entropy_criterion(logits)
         temp_loss.backward()
         loss += temp_loss
@@ -116,38 +116,37 @@ class DomainDisentangleExperiment: # See point 2. of the project
         with torch.no_grad():
             for x, y in loader:
                 source_indices = [i for i in range(len(y)) if y[i] != 7]
-                # if we don't have any label=7, it means we are in the test evaluation
-                if len(source_indices) == len(y):
-                    x = x.to(self.device)
+                domain_labels = torch.ones(y.size(), dtype=torch.long)
+                domain_labels[source_indices] = 0.0
+
+                x = x.to(self.device)
+                domain_labels = domain_labels.to(self.device)
+                
+                # if we are in the test stage, the loss corresponding to the domain classifier should not be considered
+                if self.opt["test"]:
                     y = y.to(self.device)
 
-                    logits = self.model(x)
+                    logits = self.model(x, status='cc', minimizing=True)
                     loss += self.cross_entropy_criterion(logits, y)
                     pred = torch.argmax(logits, dim=-1)
 
                     accuracy += (pred == y).sum().item()
                     count += x.size(0)
 
-                else:        
-                    domain_labels = torch.ones(y.size(), dtype=torch.long)
-                    domain_labels[source_indices] = 0.0
-
-                    x = x.to(self.device)
-                    domain_labels = domain_labels.to(self.device)
-                    
+                else:                            
                     # only source samples are going through category classifier
                     source_samples = x[source_indices].to(self.device)
                     category_labels = y[source_indices].to(self.device)
                                         
                     # the batch should have more than 1 source sample to be able to classify the category
                     if len(source_indices) > 1:
-                        logits = self.model(source_samples)
-                        loss += self.cross_entropy_criterion(logits, category_labels)
+                        logits = self.model(source_samples, status='cc', minimizing=True)
+                        loss += 2 * self.cross_entropy_criterion(logits, category_labels)
                         pred = torch.argmax(logits, dim=-1)
                         accuracy += (pred == category_labels).sum().item()
                         count += source_samples.size(0)
                     
-                    logits = self.model(x, status='dc')
+                    logits = self.model(x, status='dc', minimizing=True)
                     loss += self.cross_entropy_criterion(logits, domain_labels)
                     pred = torch.argmax(logits, dim=-1)
                     accuracy += (pred == domain_labels).sum().item()
