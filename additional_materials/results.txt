@@ -1,4 +1,8 @@
 baseline:
 |  cartoon: 59.85  |  sketch: 43.52  |  photo: 91.50  |  average: 64.96  |
 domain disentangle:
-|  cartoon: 62.20  |  sketch: 63.68  |  photo: 92.81  |  average: 72.90  |
+|  cartoon: 66.38  |  sketch: 72.49  |  photo: 92.57  |  average: 77.15  |
+
+
+
+{'w0': 0.6478031718562925, 'w1': 0.6024820268907399, 'w2': 0.38093098996994523, 'w3': 0.8487047675687556, 'w4': 0.9429200096513779, 'w5': 0.856580109067672}
