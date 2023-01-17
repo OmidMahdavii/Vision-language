@@ -141,7 +141,7 @@ class DomainDisentangleExperiment: # See point 2. of the project
                     # the batch should have more than 1 source sample to be able to classify the category
                     if len(source_indices) > 1:
                         logits = self.model(source_samples, status='cc', minimizing=True)
-                        loss += 2 * self.cross_entropy_criterion(logits, category_labels)
+                        loss += self.cross_entropy_criterion(logits, category_labels)
                         pred = torch.argmax(logits, dim=-1)
                         accuracy += (pred == category_labels).sum().item()
                         count += source_samples.size(0)

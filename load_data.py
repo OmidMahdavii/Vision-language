@@ -98,7 +98,7 @@ def read_clip_labels(data_path, domain_name):
             item_dict = eval(i)
             item_domain_name = item_dict['image_name'].split('/')[0]
             if item_domain_name == domain_name:
-                examples[f'{data_path}/kfold/' + item_dict[f'image_name']] = ' - '.join(item_dict['descriptions'])
+                examples[f'{data_path}/kfold/' + item_dict[f'image_name']] = ' _ '.join(item_dict['descriptions'])
 
     return examples
 
@@ -286,7 +286,7 @@ def build_splits_clip_disentangle(opt):
                 else:
                     train_examples.append([example, category_idx, ''])
             else:
-                val_examples.append([example, category_idx]) # each pair is [path_to_img, class_label]
+                val_examples.append([example, category_idx, '']) # each pair is [path_to_img, class_label]
                 # if example in source_clip_examples:
                 #     val_examples.append([example, category_idx, source_clip_examples[example]]) # each item is is [path_to_img, class_label, clip labels]
                 # else:
@@ -297,7 +297,7 @@ def build_splits_clip_disentangle(opt):
     for category_idx, examples_list in target_examples.items():
         for example in examples_list:
             loop_index += 1
-            test_examples.append([example, category_idx]) # each pair is [path_to_img, class_label]       
+            test_examples.append([example, category_idx, '']) # each pair is [path_to_img, class_label, '']       
             # including target examples in the train_examples for domain classifier
             # we specify them with label=7 to be able to determine them       
             if loop_index > split_idx:
@@ -306,7 +306,7 @@ def build_splits_clip_disentangle(opt):
                 else:
                     train_examples.append([example, 7, ''])
             else:
-                val_examples.append([example, 7]) # each pair is [path_to_img, 7]
+                val_examples.append([example, 7, '']) # each pair is [path_to_img, 7]
                 # if example in target_clip_examples:
                 #     val_examples.append([example, 7, target_clip_examples[example]]) # each item is [path_to_img, 7, clip labels]
                 # else:

@@ -107,8 +107,6 @@ class DomainDisentangleModel(nn.Module):
         return y
 
 
-
-
 class CLIPDisentangleModel(nn.Module):
     def __init__(self):
         super(CLIPDisentangleModel, self).__init__()
@@ -128,7 +126,7 @@ class CLIPDisentangleModel(nn.Module):
             nn.ReLU()
         )
 
-        self.clip_encoder = nn.Sequential(
+        self.category_encoder = nn.Sequential(
             nn.Linear(512, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
@@ -142,27 +140,28 @@ class CLIPDisentangleModel(nn.Module):
             nn.ReLU()
         )
 
-        # self.category_classifier = nn.Linear(512, 7)
-        # self.domain_classifier = nn.Linear(512, 2)
-        # self.clip_classifier = nn.Linear(512,2)
+        self.category_classifier = nn.Linear(512, 7)
+        self.domain_classifier = nn.Linear(512, 2)
 
-        # self.reconstructor = nn.Linear(1024, 512)
+        self.reconstructor = nn.Linear(1024, 512)
 
 
-    def forward(self, x, status='cc'):
-        # status: cc: category classifier, dc: domain classifier, rc: reconstructor
+    def forward(self, x, status='cc', minimizing=True):
+        # status: cc: category classifier, dc: domain classifier, rc: reconstructor, df: domain features
         x = self.feature_extractor(x)
-        clip_features = self.clip_encoder(x)
+        category_features = self.category_encoder(x)
         domain_features = self.domain_encoder(x)
 
         if status == 'cc':
-            y = clip_features
+            y = self.category_classifier(category_features) if minimizing else self.category_classifier(domain_features)
         
         elif status == 'dc':
-            y = domain_features
+            y = self.domain_classifier(domain_features) if minimizing else self.domain_classifier(category_features)
 
-        # elif status == 'rc':
+        elif status == 'rc':
             # we should return the features too to be able to compute the loss
-            # y = (self.reconstructor(torch.cat((clip_features, domain_features), dim=1)), x)
+            y = (self.reconstructor(torch.cat((category_features, domain_features), dim=1)), x)
+        elif status == 'df':
+            y = domain_features
 
         return y
