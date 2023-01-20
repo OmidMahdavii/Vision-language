@@ -98,7 +98,7 @@ def read_clip_labels(data_path, domain_name):
             item_dict = eval(i)
             item_domain_name = item_dict['image_name'].split('/')[0]
             if item_domain_name == domain_name:
-                examples[f'{data_path}/kfold/' + item_dict[f'image_name']] = ' _ '.join(item_dict['descriptions'])
+                examples[f'{data_path}/kfold/' + item_dict[f'image_name']] = ', '.join(item_dict['descriptions'])
 
     return examples
 
