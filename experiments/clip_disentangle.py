@@ -98,7 +98,7 @@ class CLIPDisentangleExperiment: # See point 4. of the project
         if len(source_indices) > 1:
             ### source samples
             logits = self.model(source_samples, status='cc', minimizing=True)
-            temp_loss = 6 * self.cross_entropy_criterion(logits, category_labels)
+            temp_loss = 4 * self.cross_entropy_criterion(logits, category_labels)
             temp_loss.backward()
             loss += temp_loss
 

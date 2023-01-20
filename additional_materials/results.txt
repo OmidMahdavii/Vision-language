@@ -1,19 +1,23 @@
 baseline:
 |  cartoon: 59.85  |  sketch: 43.52  |  photo: 91.50  |  average: 64.96  |
+
 domain disentangle:
 validation coefficients: 1, 1 - training coefficients: 4, 1, 1, 1, 1
 |  cartoon: 66.38  |  sketch: 72.49  |  photo: 92.57  |  average: 77.15  |
+validation coefficients: 1, 0 - training coefficients: 4, 1, 1, 1, 1
+|  cartoon: 66.47  |  sketch: 66.84  |  photo: 90.36  |  average: 74.56  |
 validation coefficients: 1.5, 1 - training coefficients: 4, 1, 1, 1, 1
-|  cartoon: 60.84  |  sketch: 66.45  |  photo: 89.94  |  average: 77.15  |
+|  cartoon: 60.84  |  sketch: 66.45  |  photo: 89.94  |  average: 72.41  |
 validation coefficients: 2, 1 - training coefficients: 4, 1, 1, 1, 1
-|  cartoon: 62.07  |  sketch: 65.79  |  photo: 89.52  |  average: 77.15  |
+|  cartoon: 62.07  |  sketch: 65.79  |  photo: 89.52  |  average: 72.46  |
+
 clip disentangle:
 validation coefficients: 1, 1 - training coefficients: 4, 1, 1, 1, 1, 1
-|  cartoon: 56.74  |  sketch: 65.39  |  photo: 89.94  |  average: 70.69  |
+|  cartoon: 64.85  |  sketch: 69.61  |  photo: 92.16  |  average: 75.54  |
+validation coefficients: 1, 0 - training coefficients: 4, 1, 1, 1, 1, 1
+|  cartoon: 62.63  |  sketch: 69.28  |  photo: 88.08  |  average: 73.33  |
 validation coefficients: 1, 1 - training coefficients: 5, 1, 1, 1, 1, 1
 |  cartoon: 62.88  |  sketch: 61.24  |  photo: 91.92  |  average: 72.01  |
-validation coefficients: 1, 1 - training coefficients: 6, 1, 1, 1, 1, 1
-|  cartoon:   |  sketch:   |  photo:   |  average:   |
 
 
 
