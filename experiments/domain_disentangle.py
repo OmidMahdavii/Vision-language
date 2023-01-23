@@ -29,8 +29,8 @@ class DomainDisentangleExperiment: # See point 2. of the project
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=opt['lr'])
         self.cross_entropy_criterion = torch.nn.CrossEntropyLoss()
         self.entropy_criterion = HLoss()
-        self.reconstruction_criterion = torch.nn.MSELoss()
-        # self.KLDiv_criterion = torch.nn.KLDivLoss()
+        self.L2_criterion = torch.nn.MSELoss()
+        self.KLDiv_criterion = torch.nn.KLDivLoss()
 
     def save_checkpoint(self, path, iteration, best_accuracy, total_train_loss):
         checkpoint = {}
@@ -98,9 +98,9 @@ class DomainDisentangleExperiment: # See point 2. of the project
         loss += temp_loss
 
         logits = self.model(x, status='rc')
-        temp_loss = self.reconstruction_criterion(*logits)
-        # temp_loss2 = self.KLDiv_criterion(*logits) / 4
-        # temp_loss = temp_loss1 + temp_loss2
+        temp_loss1 = self.L2_criterion(*logits)
+        temp_loss2 = self.KLDiv_criterion(*logits) / 4
+        temp_loss = temp_loss1 + temp_loss2
         temp_loss.backward()
         loss += temp_loss
 
