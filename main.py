@@ -67,6 +67,7 @@ def main(opt):
 
                 iteration += 1
                 if iteration > opt['max_iterations']:
+                    opt['test'] = True
                     break
 
     # Test
