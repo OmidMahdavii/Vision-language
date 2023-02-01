@@ -35,3 +35,12 @@ validation coefficients: 1, 1 - training coefficients: 4, 1, 1, 1, 0.25, 1
 validation coefficients: 1, 1 - training coefficients: 4, 1, 1, 1, 1, 2
 |  cartoon: 56.83  |  sketch: 42.84  |  photo: 89.94  |  average: 63.20  |
 
+clip fine-tuning:
+validation coefficients: 1, 0 - training coefficients: 4, 1, 1, 1, 1, 1
+|  cartoon:   |  sketch:   |  photo:   |  average:   |
+validation coefficients: 1, 1 - training coefficients: 4, 1, 1, 1, 1, 1
+|  cartoon:   |  sketch:   |  photo:   |  average:   |
+validation coefficients: 2, 1 - training coefficients: 4, 1, 1, 1, 1, 1
+|  cartoon:   |  sketch:   |  photo:   |  average:   |
+validation coefficients: 1, 2 - training coefficients: 4, 1, 1, 1, 1, 1
+|  cartoon:   |  sketch:   |  photo:   |  average:   |
