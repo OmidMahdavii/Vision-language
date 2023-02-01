@@ -61,6 +61,20 @@ class PACSDatasetClipDisentangle(Dataset):
         return x, y, descriptions
 
 
+class PACSDatasetDescriptions(Dataset):
+    def __init__(self, examples, transform):
+        self.examples = examples
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.examples)
+    
+    def __getitem__(self, index):
+        img_path, descriptions = self.examples[index]
+        x = self.transform(Image.open(img_path).convert('RGB'))
+        return x, descriptions
+
+
 def read_lines(data_path, domain_name):
     examples = {}
     with open(f'{data_path}/{domain_name}.txt') as f:
@@ -101,6 +115,7 @@ def read_clip_labels(data_path, domain_name):
                 examples[f'{data_path}/kfold/' + item_dict[f'image_name']] = ', '.join(item_dict['descriptions'])
 
     return examples
+
 
 # def read_lines2(data_path, domain_name):
 #     examples = {}
@@ -177,7 +192,6 @@ def build_splits_baseline(opt):
     return train_loader, val_loader, test_loader
 
 
-
 def build_splits_domain_disentangle(opt):
     source_domain = 'art_painting'
     target_domain = opt['target_domain']
@@ -250,7 +264,6 @@ def build_splits_domain_disentangle(opt):
     return train_loader, val_loader, test_loader
 
 
-
 def build_splits_clip_disentangle(opt):
     source_domain = 'art_painting'
     target_domain = opt['target_domain']
@@ -287,10 +300,6 @@ def build_splits_clip_disentangle(opt):
                     train_examples.append([example, category_idx, ''])
             else:
                 val_examples.append([example, category_idx, '']) # each pair is [path_to_img, class_label]
-                # if example in source_clip_examples:
-                #     val_examples.append([example, category_idx, source_clip_examples[example]]) # each item is is [path_to_img, class_label, clip labels]
-                # else:
-                #     val_examples.append([example, category_idx, ''])
     
     split_idx = round(target_val_split_length * (1 - source_domain_ratio))
     loop_index = 0
@@ -307,10 +316,6 @@ def build_splits_clip_disentangle(opt):
                     train_examples.append([example, 7, ''])
             else:
                 val_examples.append([example, 7, '']) # each pair is [path_to_img, 7]
-                # if example in target_clip_examples:
-                #     val_examples.append([example, 7, target_clip_examples[example]]) # each item is [path_to_img, 7, clip labels]
-                # else:
-                #     val_examples.append([example, 7, ''])
     
     # Transforms
     normalize = T.Normalize([0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # ResNet18 - ImageNet Normalization
@@ -337,3 +342,40 @@ def build_splits_clip_disentangle(opt):
 
     return train_loader, val_loader, test_loader
 
+
+def build_splits_clip_finetuner(batch_size, num_workers):
+    text_files = ['groupe1AML.txt', 'groupe1DAAI.txt', 'groupe2AML.txt', 'groupe2DAAI.txt', 'groupe3AML.txt',
+            'groupe3DAAI.txt', 'groupe5AML.txt', 'groupe6AML.txt', 'group_299837_300451_300708.txt']
+    
+    clip_examples = [] # it will be a list of images with their descriptions
+    
+    for file_name in text_files:
+        with open(f'data/PACS/clip_labels/{file_name}') as f:
+            line = f.read()
+
+        line = line[1:-1:1]
+        items = line.split('},')
+        for i in range(len(items)-1):
+            items[i] = items[i] + '}'
+
+        for i in items: 
+            item_dict = eval(i)
+            address = 'data/PACS/kfold/' + item_dict[f'image_name']
+            descriptions = ', '.join(item_dict['descriptions'])
+            clip_examples.append([address, descriptions])
+    
+    # Transforms
+    normalize = T.Normalize([0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # ResNet18 - ImageNet Normalization
+
+    train_transform = T.Compose([
+        T.Resize(256),
+        T.RandAugment(3, 15),
+        T.CenterCrop(224),
+        T.ToTensor(),
+        normalize
+    ])
+
+    # Dataloaders
+    train_loader = DataLoader(PACSDatasetDescriptions(clip_examples, train_transform), batch_size=batch_size, num_workers=num_workers, shuffle=True)
+    
+    return train_loader

@@ -1,6 +1,7 @@
 import torch
+import clip
 import torch.nn.functional as F
-from models.base_model import DomainDisentangleModel
+from models.base_model import CLIPDisentangleModel
 
 class HLoss(torch.nn.Module):
     def __init__(self):
@@ -11,7 +12,7 @@ class HLoss(torch.nn.Module):
         return b.sum() / x.size(0)
 
 
-class DomainDisentangleExperiment: # See point 2. of the project
+class CLIPFineTuneExperiment: # Point 5. of the project
     
     def __init__(self, opt):
         # Utils
@@ -19,11 +20,22 @@ class DomainDisentangleExperiment: # See point 2. of the project
         self.device = torch.device('cpu' if opt['cpu'] else 'cuda:0')
 
         # Setup model
-        self.model = DomainDisentangleModel()
+        self.model = CLIPDisentangleModel()
         self.model.train()
         self.model.to(self.device)
         for param in self.model.parameters():
             param.requires_grad = True
+
+        # Load CLIP model and freeze it
+        self.clip_model, _ = clip.load('ViT-B/32', device='cpu') # load it first to CPU to ensure you're using fp32 precision.
+        
+        finetuned = torch.load('finetuned_clip/last_layer.pt')
+
+        self.clip_model.load_state_dict(finetuned['model'])
+        self.clip_model = self.clip_model.to(self.device)
+        self.clip_model.eval()
+        for param in self.clip_model.parameters():
+            param.requires_grad = False
 
         # Setup optimization procedure
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=opt['lr'])
@@ -56,10 +68,18 @@ class DomainDisentangleExperiment: # See point 2. of the project
 
         return iteration, best_accuracy, total_train_loss
 
+    def text_feature_extractor(self, description):
+        # use the textual encoder:
+        tokenized_text = clip.tokenize(description).to(self.device)
+        text_features = self.clip_model.encode_text(tokenized_text)
+
+        return text_features
+
     def train_iteration(self, data):
-        x, y = data
+        x, y, description = data
 
         source_indices = [i for i in range(len(y)) if y[i] != 7]
+        clip_indices = [i for i in range(len(description)) if len(description[i]) != 0]
         
         domain_labels = torch.ones(y.size(), dtype=torch.long)
         domain_labels[source_indices] = 0.0
@@ -70,6 +90,10 @@ class DomainDisentangleExperiment: # See point 2. of the project
         # only source samples are going through category classifier
         source_samples = x[source_indices].to(self.device)
         category_labels = y[source_indices].to(self.device)
+
+        # only samples which have clip label are going through text encoder
+        clip_samples = x[clip_indices].to(self.device)
+        clip_description = [description[i] for i in clip_indices]
 
         self.optimizer.zero_grad()
         loss = 0
@@ -104,6 +128,14 @@ class DomainDisentangleExperiment: # See point 2. of the project
         temp_loss.backward()
         loss += temp_loss
 
+        # the batch should have more than 1 clip sample to be able to compute the loss
+        if len(clip_indices) > 1:
+            logits = self.model(clip_samples, status='df')
+            text_features = self.text_feature_extractor(clip_description)
+            temp_loss = self.L2_criterion(logits, text_features)
+            temp_loss.backward()
+            loss += temp_loss
+
         self.optimizer.step()
     
         return loss.item()
@@ -114,7 +146,7 @@ class DomainDisentangleExperiment: # See point 2. of the project
         count = 0
         loss = 0
         with torch.no_grad():
-            for x, y in loader:
+            for x, y, _ in loader:
                 source_indices = [i for i in range(len(y)) if y[i] != 7]
                 domain_labels = torch.ones(y.size(), dtype=torch.long)
                 domain_labels[source_indices] = 0.0

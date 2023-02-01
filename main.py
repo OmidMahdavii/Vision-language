@@ -5,6 +5,7 @@ from load_data import build_splits_baseline, build_splits_domain_disentangle, bu
 from experiments.baseline import BaselineExperiment
 from experiments.domain_disentangle import DomainDisentangleExperiment
 from experiments.clip_disentangle import CLIPDisentangleExperiment
+from experiments.clip_finetune import CLIPFineTuneExperiment
 # import optuna
 
 def setup_experiment(opt):
@@ -21,6 +22,11 @@ def setup_experiment(opt):
         experiment = CLIPDisentangleExperiment(opt)
         train_loader, validation_loader, test_loader = build_splits_clip_disentangle(opt)
 
+    elif opt['experiment'] == 'clip_finetune':
+        experiment = CLIPFineTuneExperiment(opt)
+        # data loader is the same as the clip disentangle
+        train_loader, validation_loader, test_loader = build_splits_clip_disentangle(opt)    
+    
     else:
         raise ValueError('Experiment not yet supported.')
     
@@ -61,10 +67,10 @@ def main(opt):
 
                 iteration += 1
                 if iteration > opt['max_iterations']:
-                    opt['test'] = True
                     break
 
     # Test
+    opt['test'] = True
     experiment.load_checkpoint(f'{opt["output_path"]}/best_checkpoint.pth')
     test_accuracy, _ = experiment.validate(test_loader)
     logging.info(f'[TEST] Accuracy: {(100 * test_accuracy):.2f}')
