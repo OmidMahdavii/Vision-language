@@ -33,6 +33,8 @@ At this point you should be able to run and edit the base code provided.
 | `experiments/baseline.py` | contains the code to reproduce the baseline experiment (see point 1. of the project) |
 | `experiments/domain_disentangle.py` | contains the skeleton code to implement the domain disentanglement experiment (see point 2. of the project) |
 | `experiments/clip_disentangle.py` | contains the skeleton code to implement the disentanglement experiment using CLIP (see point 4. of the project) |
+| `finetune.py` | contains the code to fine-tune CLIP |
+| `experiments/clip_finetune.py` | contains the code to implement the disentanglement experiment using fine-tuned CLIP (see point 5. of the project) |
 
 ## Base Command Line Arguments
 | Argument &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;  | Description |
@@ -57,7 +59,7 @@ At this point you should be able to run and edit the base code provided.
 ## Baseline Results (see point 1. of the project)
 |          | Art Painting &#8594; Cartoon | Art Painting &#8594; Sketch | Art Painting &#8594; Photo | Average |
 | :------: | :--------------------------: | :-------------------------: | :------------------------: | :-----: |
-| Baseline |            63.91             |             61.54           |            91.86           |  72.44  |
+| Baseline |            59.04             |             58.72           |            94.07           |  70.61  |
 
 ## CLIP Text Encoder
 The following code fragment should provide an hint on how to use CLIP's text encoder.
