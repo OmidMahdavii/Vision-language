@@ -12,12 +12,6 @@ CATEGORIES = {
     'person': 6,
 }
 
-# DOMAINS = {
-#     'art_painting': 0,
-#     'cartoon': 1,
-#     'photo': 2,
-#     'sketch': 3,
-# }
 
 class PACSDatasetBaseline(Dataset):
     def __init__(self, examples, transform):
@@ -115,24 +109,6 @@ def read_clip_labels(data_path, domain_name):
                 examples[f'{data_path}/kfold/' + item_dict[f'image_name']] = ', '.join(item_dict['descriptions'])
 
     return examples
-
-
-# def read_lines2(data_path, domain_name):
-#     examples = {}
-#     with open(f'{data_path}/{domain_name}.txt') as f:
-#         lines = f.readlines()
-#     for line in lines:
-#         line = line.strip().split()[0].split('/')
-#         category_name = line[3]
-#         domain_idx = DOMAINS[domain_name]
-#         category_idx = CATEGORIES[category_name]
-#         image_name = line[4]
-#         image_path = f'{data_path}/kfold/{domain_name}/{category_name}/{image_name}'
-#         if (domain_idx, category_idx) not in examples.keys():
-#             examples[(domain_idx, category_idx)] = [image_path]
-#         else:
-#             examples[(domain_idx, category_idx)].append(image_path)
-#     return examples
 
    
 def build_splits_baseline(opt):
