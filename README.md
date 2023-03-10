@@ -1,6 +1,4 @@
 # AML 2022/2023 Project - Vision and Language
-Official repository for the "Vision and Language" project - Advanced Machine Learning 2022/2023 @ PoliTo
-
 ## Getting Started
 Make sure to have a CUDA capable device, supporting at least CUDA 11.1, installed and correctly configured on your system. 
 
@@ -56,31 +54,4 @@ At this point you should be able to run and edit the base code provided.
 | `--cpu` | if set, the experiment will run on the CPU. |
 | `--test` | if set, the experiment will skip the training procedure and just run the evaluation on the test set. |
 
-## Baseline Results (see point 1. of the project)
-|          | Art Painting &#8594; Cartoon | Art Painting &#8594; Sketch | Art Painting &#8594; Photo | Average |
-| :------: | :--------------------------: | :-------------------------: | :------------------------: | :-----: |
-| Baseline |            59.04             |             58.72           |            94.07           |  70.61  |
 
-## CLIP Text Encoder
-The following code fragment should provide an hint on how to use CLIP's text encoder.
-
-```python
-import torch
-import clip
-
-# Load CLIP model and freeze it
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-clip_model, _ = clip.load('ViT-B/32', device='cpu') # load it first to CPU to ensure you're using fp32 precision.
-clip_model = clip_model.to(device)
-clip_model.eval()
-for param in clip_model.parameters():
-    param.requires_grad = False
-
-# To use the textual encoder:
-description = 'a picture of a small dog playing with a ball'
-tokenized_text = clip.tokenize(description).to(device)
-
-text_features = clip_model.encode_text(tokenized_text)
-
-```
